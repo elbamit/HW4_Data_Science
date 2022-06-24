@@ -1,10 +1,16 @@
 from platform import platform
+from matplotlib.figure import Figure
 import pandas as pd
+from sklearn import cluster
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 import numpy as np
 import plotly.express as px
+import chart_studio.plotly as py
+from urllib.request import urlopen
+import json
+
 
 # Function that gets a path of a 'xlsx' file, reads it and converts it to a dataframe
 def load_xlsx(path):
@@ -46,32 +52,50 @@ def create_KMeans_model(df, n_clusters, n_init):
     return df
 
 # Function that receives a dataframe and create a scatter plot by the 'Generosity' and 'social_support' features
-def show_scatter_plot(df):
-    plt.scatter(df["Social support"].to_numpy(), df["Generosity"].to_numpy(), s=10, c=df["cluster"], alpha=0.5)
-    plt.xlabel("Social support")
-    plt.ylabel("Generosity")
-    plt.title("Social support over Generosity")
+def scatter_plot(df):
+    figure = Figure(figsize=(4,4))
+    plt = figure.add_subplot(111)
+    list_of_clusters = df['cluster'].unique().tolist()
+    list_of_clusters.sort()
+    list_of_clusters.append(len(list_of_clusters))
+    
+    
+    myplot = plt.scatter(df["Social support"].to_numpy(), df["Generosity"].to_numpy(), s=10, c=df["cluster"], alpha=0.5)
+    figure.colorbar(myplot, boundaries = list_of_clusters)
+    plt.set_xlabel("Social support")
+    plt.set_ylabel("Generosity")
+    plt.title.set_text("Social support over Generosity")
 
-    plt.show()
+
+
+    # plt.legend(handle)
+
+    return figure
 
     # return plot/
 
-def show_horopleth_map(df):
-    from urllib.request import urlopen
-    import json
-    with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
-        countries = json.load(response)
+def horopleth_map(df):
     
-    
+    try:
+        with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+            countries = json.load(response)
+
         
-    fig = px.choropleth(df, geojson=countries, locations='country', color='cluster',
-                           color_continuous_scale="Viridis",
-                           range_color=(0, 12),
-                           scope="usa",
-                           labels={'unemp':'unemployment rate'}
-                          )
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    fig.show()
+            
+            fig = px.choropleth(geojson=countries, locations=df['country'], color=df['cluster'],
+                                range_color=(0, len(df['cluster'].unique().tolist())-1),
+                                locationmode = "country names",
+                                scope="world",
+                                labels={'unemp':'clusters'}
+                                )
+            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, title_text='K Means Clustering Visualization Per Country')
+            # fig.show()
+
+            py.sign_in("amitelb", "YDSzG3wsuZmLH33ulK5r")
+            py.image.save_as(fig, filename = "Horopleth.png")
+        return True
+    except:
+        return False
 
 # YDSzG3wsuZmLH33ulK5r
 
@@ -83,7 +107,7 @@ def show_horopleth_map(df):
 # df = group_by_country(df)
 # df = create_KMeans_model(df, 4, 3)
 
-# show_scatter_plot(df)
+# scatter_plot(df)
 # show_horopleth_map(df)
 # plot.show()
 

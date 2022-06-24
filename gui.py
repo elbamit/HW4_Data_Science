@@ -10,6 +10,9 @@ from matplotlib.backends.backend_tkagg import (
     NavigationToolbar2Tk
 )
 
+from PIL import Image, ImageTk
+
+
   
 
 
@@ -27,15 +30,17 @@ class gui:
         
 
         # Text of "select file"
-        self.browse_file_label = Label(root,text="Select file",width=80, height=4,fg="black")
-        self.browse_file_label.grid(row=0, column=0)
+        self.browse_file_label = Label(root,text="Select file",width=40, height=2,fg="black")
+        self.browse_file_label.grid(row=0, column=0, sticky=W, padx=10, pady=10)
+
+        self.browse_file_entry = Entry(root, width=40, justify='left', textvariable=self.filepath)
+        self.browse_file_entry.grid(row=1, column=0, sticky=W, padx=10, pady=10)
 
         # Button of "browse"
         self.browse_file_button = Button(root, text='Browse', command=self.fileopen)
-        self.browse_file_button.grid(row=1, column=1)
+        self.browse_file_button.grid(row=2, column=0, sticky=W, padx=10, pady=10)
 
-        self.browse_file_entry = Entry(root, width=100, justify='left', textvariable=self.filepath)
-        self.browse_file_entry.grid(row=1, column=0)
+        
 
         
 
@@ -43,23 +48,22 @@ class gui:
 
         # Text of "number of clusters_k"
         self.num_of_clusters_k_label = Label(root,text="Number of clusters k", width=40, height=2,fg="black")
-        self.num_of_clusters_k_label.grid(row=2, column=0)
+        self.num_of_clusters_k_label.grid(row=3, column=0, sticky=W, padx=10, pady=10)
 
         # Text box for number of clusters_k
-        self.num_of_clusters_k_entry = Entry(root, width=30, textvariable=self.num_of_clusters_k)
-        self.num_of_clusters_k_entry.grid(row=3, column=0)
+        self.num_of_clusters_k_entry = Entry(root, width=40, textvariable=self.num_of_clusters_k)
+        self.num_of_clusters_k_entry.grid(row=4, column=0, sticky=W, padx=10, pady=10)
 
 
 
          # Text of "number of runs"
         self.num_of_runs_label = Label(root,text="Number of runs", width=40, height=2,fg="black")
-        self.num_of_runs_label.grid(row=4, column=0)
+        self.num_of_runs_label.grid(row=5, column=0, sticky=W, padx=10, pady=10)
 
         # Text box for number of runs
-        self.num_of_runs_entry = Entry(root, width=30, textvariable=self.num_of_runs)
-        self.num_of_runs_entry.grid(row=5, column=0)
+        self.num_of_runs_entry = Entry(root, width=40, textvariable=self.num_of_runs)
+        self.num_of_runs_entry.grid(row=6, column=0, sticky=W, padx=10, pady=10)
 
-        self.bla = Label(root,text="Nblaers k", width=40, height=2,fg="black")
 
 
 
@@ -67,11 +71,13 @@ class gui:
 
         # Button of "Pre-process"
         self.browse_file_button = Button(root, text='Pre-process', command=self.preprocess)
-        self.browse_file_button.grid(row=6, column=0)
+        self.browse_file_button.grid(row=7, column=0, sticky=W, padx=10, pady=10)
+
+
 
         # Button of "Cluster"
         self.browse_file_button = Button(root, text='Cluster', command=self.cluster)
-        self.browse_file_button.grid(row=1, column=0)
+        self.browse_file_button.grid(row=9, column=0, sticky=W, padx=10, pady=10)
 
 
 
@@ -114,7 +120,20 @@ class gui:
 
 
     def cluster(self):
-        self.model = km.create_KMeans_model(self.df, self.num_of_clusters_k, self.num_of_runs)
+        self.model = km.create_KMeans_model(self.df, self.num_of_clusters_k.get(), self.num_of_runs.get())
+        fig = km.scatter_plot(self.model)
+
+        scatterplot_canvas = FigureCanvasTkAgg(fig, master=root)
+        scatterplot_canvas.draw()
+        scatterplot_canvas.get_tk_widget().grid(row=10, column=0)
+
+        if km.horopleth_map(self.model):
+            im = Image.open("Horopleth.png") 
+
+            im_tk = ImageTk.PhotoImage(im.resize((500,300)))
+            country_canvas_tk = Label(root,image=im_tk)
+            country_canvas_tk.image = im_tk
+            country_canvas_tk.grid(column=1, row=10)
         # scatter plot
         # horopleth_map
 
@@ -123,6 +142,7 @@ class gui:
 
 if __name__ == "__main__":
     root = Tk()
+    # root.geometry("550x350")
     my_gui = gui(root)
     root.mainloop()
 
