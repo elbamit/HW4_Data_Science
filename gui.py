@@ -93,9 +93,15 @@ class gui:
             return
         else:
             self.df = km.load_xlsx(self.filepath.get())
-            self.df = km.complete_missing_numerical_values(self.df)
-            self.df = km.standardize_df(self.df)
-            self.df = km.group_by_country(self.df)
+            if self.df is None:
+                messagebox.showinfo(title="K Means Clustering", message="\n You must select a valid file first (excel)")
+            else:
+                self.df = km.complete_missing_numerical_values(self.df)
+                self.df = km.standardize_df(self.df)
+                self.df = km.group_by_country(self.df)
+                self.df.to_excel("PreProcessedData.xlsx")
+                messagebox.showinfo(title="K Means Clustering", message="\n Preprocessing completed successfully!")
+
 
     def findErrors(self):
         errorsString = ""
@@ -114,8 +120,8 @@ class gui:
             k_is_empty = True
         finally:
             if not k_is_empty:
-                if not 0 < self.num_of_clusters_k.get() <= 10:
-                    errorsString += "\n - The number of clusters must be between 1 - 10"
+                if not 0 < self.num_of_clusters_k.get() <= 50:
+                    errorsString += "\n - The number of clusters must be between 1 - 50"
 
             # validate the num_of_runs
             try:
@@ -125,8 +131,8 @@ class gui:
                 runs_is_empty = True
             finally:
                 if not runs_is_empty:
-                    if not 0 < self.num_of_runs.get() <= 10:
-                        errorsString += "\n - The number of runs must be between 1 - 10"
+                    if not 0 < self.num_of_runs.get() <= 50:
+                        errorsString += "\n - The number of runs must be between 1 - 50"
 
                 # checks if there are any errors
                 if errorsString:
@@ -143,14 +149,14 @@ class gui:
         scatterplot_canvas.draw()
         scatterplot_canvas.get_tk_widget().grid(row=10, column=0)
 
-        if km.horopleth_map(self.model):
+        if km.choropleth_map(self.model):
             im = Image.open("Horopleth.png")
 
             im_tk = ImageTk.PhotoImage(im.resize((500, 400)))
             country_canvas_tk = Label(root, image=im_tk)
             country_canvas_tk.image = im_tk
             country_canvas_tk.grid(column=1, row=10)
-            messagebox.showinfo(title="K Means Clustering", message="\n The clustering process has been completed")
+            messagebox.showinfo(title="K Means Clustering", message="\n The clustering process has been completed!")
 
 
 if __name__ == "__main__":
@@ -162,7 +168,5 @@ if __name__ == "__main__":
 
 
 
-# 1. when plotting the saved pic, need a correction
-# 2. validate the validation values (1-10), also maybe we need to validate the file_path
 # 3. when selecting file, clear it, and then select again -> error
 

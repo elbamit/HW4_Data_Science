@@ -74,7 +74,7 @@ def scatter_plot(df):
 
     # return plot/
 
-def horopleth_map(df):
+def choropleth_map(df):
     
     try:
         with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
